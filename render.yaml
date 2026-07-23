@@ -1,6 +1,7 @@
 # Render.com 部署配置
 # 免费 Web Service：512MB RAM，实例休眠后首次访问约 30 秒唤醒
-# 数据持久化：需要额外添加 Disk（$0.25/GB/月）或定期备份 SQLite 文件
+# 免费档不挂 Disk（0 元）：数据存于容器临时层，重启/重新部署后回到初始示例。
+# 如需永久保存数据，取消下方 disk 注释并挂盘（$0.25/GB/月）。
 services:
   - type: web
     name: tuyou-pinfang
@@ -13,7 +14,7 @@ services:
         value: 3000
       - key: ADMIN_PASSWORD
         generateValue: true
-    disk:
-      name: tuyou-data
-      mountPath: /app/data
-      sizeGB: 1
+    # disk:
+    #   name: tuyou-data
+    #   mountPath: /app/data
+    #   sizeGB: 1
