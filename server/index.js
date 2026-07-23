@@ -440,7 +440,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   res.status(500).json({ title: 'INTERNAL', status: 500, detail: '服务器内部错误' });
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`途友拼房服务已启动：http://localhost:${PORT}`);
   if (!process.env.ADMIN_PASSWORD) {
     console.log('⚠️  使用默认管理员密码「tuyou2026」，生产环境请设置环境变量 ADMIN_PASSWORD');
