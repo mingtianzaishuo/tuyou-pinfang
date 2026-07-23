@@ -334,6 +334,8 @@ let editModalKeyHandler = null;
 let currentUser = null;  // 当前登录用户 {id,name,role}
 let sse = null;          // EventSource 实例
 let sseTimer = null;     // SSE 防抖计时
+let sseRetryTimer = null;// SSE 断线重连计时
+let sseRetryDelay = 1000;// SSE 重连初始间隔（指数退避）
 let adminSessionActive = false; // 是否处于管理员会话态（用于 401 路由：弹密码框而非昵称框）
 let _adminReauthShown = false;  // 防止管理员失效时重复弹密码框
 
@@ -1085,16 +1087,34 @@ function adminLogout() {
   location.reload();
 }
 
+function disconnectSSE() {
+  clearTimeout(sseRetryTimer);
+  if (sse) { sse.close(); sse = null; }
+}
+
 function connectSSE(tokenOverride) {
-  if (sse) return;
+  disconnectSSE();
   const token = tokenOverride || localStorage.getItem('tuyou_token');
   if (!token) return;
-  sse = new EventSource('/api/events?token=' + encodeURIComponent(token));
-  sse.addEventListener('update', () => {
-    clearTimeout(sseTimer);
-    sseTimer = setTimeout(() => silentRefresh(), 150);
-  });
-  sse.onerror = () => { /* 浏览器会自动重连 */ };
+  try {
+    sse = new EventSource('/api/events?token=' + encodeURIComponent(token));
+    sse.addEventListener('update', () => {
+      clearTimeout(sseTimer);
+      sseTimer = setTimeout(() => silentRefresh(), 150);
+    });
+    sse.onopen = () => {
+      sseRetryDelay = 1000; // 连接成功，重置退避间隔
+      silentRefresh();
+    };
+    sse.onerror = () => {
+      disconnectSSE();
+      sseRetryTimer = setTimeout(() => connectSSE(tokenOverride), sseRetryDelay);
+      sseRetryDelay = Math.min(sseRetryDelay * 2, 30000); // 指数退避，最大 30 秒
+    };
+  } catch (e) {
+    sseRetryTimer = setTimeout(() => connectSSE(tokenOverride), sseRetryDelay);
+    sseRetryDelay = Math.min(sseRetryDelay * 2, 30000);
+  }
 }
 
 function silentRefresh() {
