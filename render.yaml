@@ -1,0 +1,19 @@
+# Render.com 部署配置
+# 免费 Web Service：512MB RAM，实例休眠后首次访问约 30 秒唤醒
+# 数据持久化：需要额外添加 Disk（$0.25/GB/月）或定期备份 SQLite 文件
+services:
+  - type: web
+    name: tuyou-pinfang
+    runtime: docker
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: ADMIN_PASSWORD
+        generateValue: true
+    disk:
+      name: tuyou-data
+      mountPath: /app/data
+      sizeGB: 1

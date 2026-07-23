@@ -1,0 +1,16 @@
+{
+  "name": "tuyou-pinfang",
+  "version": "1.0.0",
+  "private": true,
+  "description": "途友拼房 - 拼房需求发布与智能匹配工具（Node + Express + SQLite 便携版）",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node --experimental-sqlite server/index.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

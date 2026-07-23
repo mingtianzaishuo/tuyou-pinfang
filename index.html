@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>途友拼房 · 旅游订单拼房小系统</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="logo">🛏️</span>
+      <div class="brand-text">
+        <h1>途友拼房</h1>
+        <p>旅游订单拼房小系统</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="post">发布拼房</button>
+      <button class="tab" data-view="hall">拼房大厅</button>
+      <button class="tab" data-view="match">智能匹配</button>
+      <button class="tab" data-view="paired">拼成记录</button>
+      <button class="tab" data-view="stats">数据统计</button>
+      <button class="tab admin-only" data-view="admin" hidden>管理</button>
+    </nav>
+    <div class="user-area" id="user-area" hidden>
+      <span class="user-name" id="user-name"></span>
+      <button type="button" class="btn-mini ghost" id="admin-enter-header" hidden>管理员进入</button>
+      <button type="button" class="btn-mini ghost" id="admin-logout-btn" hidden>退出管理</button>
+      <button type="button" class="btn-mini" id="logout-btn" title="退出登录">退出</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 发布拼房 -->
+    <section class="view active" id="view-post">
+      <div class="card">
+        <h2>发布一条拼房需求</h2>
+        <p class="muted">填写你的行程，系统会帮你找到同行程、日期重叠、偏好相符的拼友。</p>
+        <form id="post-form" class="form">
+          <fieldset class="form-group">
+            <div class="form-group-title">基础信息</div>
+            <div class="grid-3">
+              <label class="field">
+                <span>昵称 / 称呼 *</span>
+                <input type="text" name="userName" placeholder="如：小鹿" required />
+              </label>
+              <label class="field">
+                <span>性别 *</span>
+                <select name="gender" required>
+                  <option value="女">女</option>
+                  <option value="男">男</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>年龄 *</span>
+                <input type="number" name="age" min="1" max="120" step="1" placeholder="如：25" required />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <div class="form-group-title">行程信息</div>
+            <div class="grid-trip-meta">
+              <div class="field">
+                <span>行程 *</span>
+                <div class="select-wrap">
+                  <select name="trip" id="trip-select" class="catalog-select" required></select>
+                  <button type="button" class="select-plus" id="trip-add-link" title="新增行程"><span>＋</span></button>
+                </div>
+                <span class="tool-hint">右键选项可删除</span>
+                <div class="add-pop" id="trip-add-pop" hidden>
+                  <input type="text" id="trip-new" placeholder="输入新行程名称" />
+                  <button type="button" class="btn-mini" id="trip-confirm-btn" title="确定（回车）">✓</button>
+                  <button type="button" class="btn-mini cancel" id="trip-cancel-btn" title="取消">×</button>
+                </div>
+              </div>
+              <div class="field field-days">
+                <span>行程天数</span>
+                <input type="number" name="tripDays" min="1" step="1" />
+              </div>
+              <div class="field">
+                <span>房间类型 *</span>
+                <div class="select-wrap">
+                  <select name="roomType" id="room-select" class="catalog-select" required></select>
+                  <button type="button" class="select-plus" id="room-add-link" title="新增房型"><span>＋</span></button>
+                </div>
+                <span class="tool-hint">右键选项可删除</span>
+                <div class="add-pop" id="room-add-pop" hidden>
+                  <input type="text" id="room-new" placeholder="输入新房型" />
+                  <button type="button" class="btn-mini" id="room-confirm-btn" title="确定（回车）">✓</button>
+                  <button type="button" class="btn-mini cancel" id="room-cancel-btn" title="取消">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <label class="field">
+                <span>出团日期 *</span>
+                <input type="date" name="checkIn" required />
+              </label>
+              <label class="field">
+                <span>完团日期 *</span>
+                <input type="date" name="checkOut" required />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <div class="form-group-title">偏好与备注</div>
+            <div class="grid-2">
+              <label class="field">
+                <span>拼房偏好 *</span>
+                <select name="preferredGender" required>
+                  <option value="不限">不限</option>
+                  <option value="同性别">同性别</option>
+                  <option value="仅女生">仅女生</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>销售人员 *</span>
+                <input type="text" name="contact" placeholder="销售人员姓名 / 工号" required />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>销售备注</span>
+              <textarea name="salesNote" rows="2" placeholder="如：销售小U，客人想拼房，已确认同性别"></textarea>
+            </label>
+
+            <label class="field">
+              <span>备注（作息、烟瘾、是否介意打呼等）</span>
+              <textarea name="note" rows="3" placeholder="如：早睡党，不抽烟，希望找安静的室友"></textarea>
+            </label>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" class="btn primary">发布需求</button>
+            <button type="reset" class="btn ghost">清空</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 拼房大厅 -->
+    <section class="view" id="view-hall">
+      <div class="toolbar">
+        <h2>拼房大厅</h2>
+        <div class="filters">
+          <input type="text" id="filter-trip" placeholder="按行程筛选" />
+          <select id="filter-gender">
+            <option value="">全部偏好</option>
+            <option value="不限">不限</option>
+            <option value="同性别">同性别</option>
+            <option value="仅女生">仅女生</option>
+          </select>
+          <select id="filter-room">
+            <option value="">全部房型</option>
+            <option value="双床房">双床房</option>
+            <option value="大床房">大床房</option>
+            <option value="标间">标间</option>
+          </select>
+        </div>
+      </div>
+      <div id="hall-pair-banner" class="pair-banner" hidden></div>
+      <div id="hall-list" class="order-grid"></div>
+      <p class="empty" id="hall-empty" hidden>还没有符合条件的拼房需求，去发布一条吧～</p>
+    </section>
+
+    <!-- 智能匹配 -->
+    <section class="view" id="view-match">
+      <div class="card">
+        <h2>智能匹配拼友</h2>
+        <p class="muted">选择一条你的拼房需求，系统会自动找出可拼的同路人。</p>
+        <label class="field">
+          <span>选择我的需求</span>
+          <select id="match-source"></select>
+        </label>
+        <button class="btn primary" id="match-run">开始匹配</button>
+      </div>
+      <div id="match-result"></div>
+    </section>
+
+    <!-- 拼成记录 -->
+    <section class="view" id="view-paired">
+      <h2>拼成记录</h2>
+      <p class="muted">在「智能匹配」确认拼房，或在「拼房大厅」点「拼」手动选两位团员后，都会在这里以连线方式成对展示。</p>
+      <div id="paired-list"></div>
+      <p class="empty" id="paired-empty" hidden>还没有拼成的记录，去「智能匹配」确认一条吧～</p>
+    </section>
+
+    <!-- 数据统计 -->
+    <section class="view" id="view-stats">
+      <div class="stat-cards">
+        <div class="stat-card"><div class="stat-num" id="stat-orders">0</div><div class="stat-label">拼房需求总数</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-dests">0</div><div class="stat-label">覆盖行程</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-matches">0</div><div class="stat-label">已拼成对数</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-nights">0</div><div class="stat-label">可拼房总晚数</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-rate">0%</div><div class="stat-label">拼成率</div></div>
+      </div>
+      <div class="card">
+        <h3>行程热度</h3>
+        <div id="dest-rank" class="rank-list"></div>
+      </div>
+      <div class="card">
+        <h3>性别分布</h3>
+        <div id="gender-dist" class="rank-list"></div>
+      </div>
+      <div class="card">
+        <h3>房型分布</h3>
+        <div id="room-dist" class="rank-list"></div>
+      </div>
+      <div class="card">
+        <h3>最近发布</h3>
+        <div id="recent-list" class="recent-list"></div>
+      </div>
+    </section>
+
+    <!-- 管理后台（密码进入） -->
+    <section class="view" id="view-admin">
+      <div class="card">
+        <h2>管理后台</h2>
+        <p class="muted">管理员专属 · 团队数据与订单总览</p>
+        <div class="admin-stat-cards" id="admin-stats"></div>
+      </div>
+      <div class="card">
+        <h3>团队成员管理</h3>
+        <p class="muted">管理员可直接添加、修改、删除团队成员并分配角色（销售 / 导游 / 管理员）。</p>
+        <form id="admin-add-user-form" class="admin-add-user">
+          <input type="text" name="name" placeholder="输入成员昵称" required autocomplete="off" />
+          <select name="role">
+            <option value="sales">销售</option>
+            <option value="guide">导游</option>
+            <option value="admin">管理员</option>
+          </select>
+          <button type="submit" class="btn small primary">添加成员</button>
+        </form>
+        <div id="admin-users" class="admin-user-list"></div>
+      </div>
+      <div class="card">
+        <h3>订单管理（全部）</h3>
+        <p class="muted">查看团队所有拼房需求，必要时可删除。</p>
+        <div id="admin-orders" class="admin-order-list"></div>
+      </div>
+      <div class="card">
+        <h3>安全设置</h3>
+        <p class="muted">修改管理员登录密码（至少 4 位），修改后立即生效并持久化。</p>
+        <form id="admin-pw-form" class="login-form" style="margin-top: 14px;">
+          <label class="field">
+            <span>当前密码 *</span>
+            <input type="password" name="current" placeholder="请输入当前密码" required autocomplete="off" />
+          </label>
+          <label class="field">
+            <span>新密码 *</span>
+            <input type="password" name="next" placeholder="至少 4 位" required autocomplete="off" />
+          </label>
+          <button type="submit" class="btn primary">更新密码</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3>数据导出</h3>
+        <p class="muted">导出团队数据用于备份或离线分析（导出行为会记入操作日志）。</p>
+        <div class="export-btns">
+          <button type="button" class="btn small" id="export-orders">导出订单 CSV</button>
+          <button type="button" class="btn small" id="export-users">导出成员 CSV</button>
+          <button type="button" class="btn small ghost" id="export-json">导出全部 JSON</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>操作日志</h3>
+        <p class="muted">管理员关键操作记录（最近 100 条）。</p>
+        <div id="admin-logs" class="admin-log-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- 登录弹窗（无密码轻量登录） -->
+  <div id="login-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+      <h3 id="login-title" class="modal-title">进入途友拼房</h3>
+      <p class="muted">输入昵称即可进入团队共享拼房看板（无密码，凭昵称识别身份）。</p>
+      <form id="login-form" class="login-form">
+        <label class="field">
+          <span>昵称 / 称呼 *</span>
+          <input name="name" placeholder="如：销售-陈静" required autocomplete="off" />
+        </label>
+        <button type="submit" class="btn primary">进入</button>
+      </form>
+      <div class="login-divider"><span>或</span></div>
+      <button type="button" class="btn ghost admin-enter-btn" id="admin-enter-btn">我是管理员，进入管理后台</button>
+    </div>
+  </div>
+
+  <!-- 管理员密码进入 -->
+  <div id="admin-login-modal" class="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="admin-login-title">
+      <h3 id="admin-login-title" class="modal-title">管理员进入</h3>
+      <p class="muted">请输入管理员密码</p>
+      <form id="admin-login-form" class="login-form">
+        <label class="field">
+          <span>管理员密码 *</span>
+          <input type="password" name="password" placeholder="请输入密码" required autocomplete="off" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost" id="admin-login-cancel">取消</button>
+          <button type="submit" class="btn primary">进入</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="context-menu" class="context-menu" hidden>
+    <div class="ctx-item" data-action="delete"><span id="ctx-label">删除行程</span></div>
+  </div>
+  <div id="room-context-menu" class="context-menu" hidden>
+    <div class="ctx-item" data-action="delete-room"><span id="room-ctx-label">删除房型</span></div>
+  </div>
+
+  <!-- 自定义确认弹窗（替代浏览器原生 confirm） -->
+  <div id="confirm-modal" class="modal-overlay" hidden>
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-message">
+      <div class="modal-icon">⚠️</div>
+      <p id="confirm-message" class="modal-message"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="confirm-cancel">取消</button>
+        <button type="button" class="btn danger" id="confirm-ok">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 大厅卡片编辑弹窗 -->
+  <div id="edit-modal" class="modal-overlay" hidden>
+    <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+      <h3 id="edit-title" class="modal-title">编辑拼房需求</h3>
+      <form id="edit-form" class="form">
+        <fieldset class="form-group">
+          <div class="form-group-title">基础信息</div>
+          <div class="grid-3">
+            <label class="field">
+              <span>昵称 / 称呼 *</span>
+              <input type="text" name="editUserName" required />
+            </label>
+            <label class="field">
+              <span>性别 *</span>
+              <select name="editGender" required>
+                <option value="女">女</option>
+                <option value="男">男</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>年龄 *</span>
+              <input type="number" name="editAge" min="1" max="120" step="1" required />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-group">
+          <div class="form-group-title">行程信息</div>
+          <div class="grid-trip-meta">
+            <div class="field">
+              <span>行程 *</span>
+              <select name="editTrip" id="edit-trip-select" class="catalog-select" required></select>
+            </div>
+            <div class="field field-days">
+              <span>行程天数</span>
+              <input type="number" name="editTripDays" min="1" step="1" />
+            </div>
+            <div class="field">
+              <span>房间类型 *</span>
+              <select name="editRoomType" id="edit-room-select" class="catalog-select" required></select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <label class="field">
+              <span>出团日期 *</span>
+              <input type="date" name="editCheckIn" required />
+            </label>
+            <label class="field">
+              <span>完团日期 *</span>
+              <input type="date" name="editCheckOut" required />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-group">
+          <div class="form-group-title">偏好与备注</div>
+          <div class="grid-2">
+            <label class="field">
+              <span>拼房偏好 *</span>
+              <select name="editPreferredGender" required>
+                <option value="不限">不限</option>
+                <option value="同性别">同性别</option>
+                <option value="仅女生">仅女生</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>销售人员 *</span>
+              <input type="text" name="editContact" required />
+            </label>
+          </div>
+
+          <label class="field">
+            <span>销售备注</span>
+            <textarea name="editSalesNote" rows="2"></textarea>
+          </label>
+
+          <label class="field">
+            <span>备注（作息、烟瘾、是否介意打呼等）</span>
+            <textarea name="editNote" rows="3"></textarea>
+          </label>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit" class="btn primary">保存修改</button>
+          <button type="button" class="btn ghost" id="edit-cancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
